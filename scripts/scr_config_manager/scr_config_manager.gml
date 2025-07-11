@@ -1,4 +1,6 @@
-/// @description Initialize the configuration manager and load settings
+/// @description Initialize the configuration manager and load settings from file
+/// @description Sets up default configuration values and loads user settings from config file
+/// @description Must be called before any other systems that depend on configuration
 function config_init() {
     global.config_file = "game_config.ini";
     global.config_loaded = false;
@@ -41,12 +43,11 @@ function config_init() {
     config_apply_display_settings();
 }
 
-/// @description Load configuration from ini file
+/// @description Load configuration values from the INI file
+/// @description Reads settings from file and applies them to global.config
+/// @description Creates default config file if none exists
 function config_load() {
-    logger_write(LogLevel.INFO, "ConfigManager", "Loading configuration from file", global.config_file);
-    
     if (!file_exists(global.config_file)) {
-        logger_write(LogLevel.WARNING, "ConfigManager", "Config file not found, creating default", global.config_file);
         config_save(); // Create default config file
         return;
     }
@@ -84,18 +85,15 @@ function config_load() {
         global.config.fixed_timestep = ini_read_real("Performance", "fixed_timestep", global.config.fixed_timestep);
         
         global.config_loaded = true;
-        logger_write(LogLevel.INFO, "ConfigManager", "Configuration loaded successfully", "All settings applied");
         
     } catch (error) {
-        logger_write(LogLevel.ERROR, "ConfigManager", "Failed to load configuration", string(error));
         global.config_loaded = false;
     }
 }
 
-/// @description Save current configuration to ini file
+/// @description Save current configuration values to the INI file
+/// @description Writes all current config settings to persistent storage
 function config_save() {
-    logger_write(LogLevel.INFO, "ConfigManager", "Saving configuration to file", global.config_file);
-    
     try {
         // Display settings
         ini_write_real("Display", "width", global.config.game_width);
@@ -128,19 +126,17 @@ function config_save() {
         ini_write_real("Performance", "target_fps", global.config.target_fps);
         ini_write_real("Performance", "fixed_timestep", global.config.fixed_timestep);
         
-        logger_write(LogLevel.INFO, "ConfigManager", "Configuration saved successfully", "File written");
-        
     } catch (error) {
-        logger_write(LogLevel.ERROR, "ConfigManager", "Failed to save configuration", string(error));
+        // Log error if logging system is available
+        if (variable_global_exists("log_enabled") && global.log_enabled) {
+            logger_write(LogLevel.ERROR, "ConfigManager", "Failed to save configuration", string(error));
+        }
     }
 }
 
-/// @description Apply display settings from configuration
+/// @description Apply display settings from configuration to the game window
+/// @description Sets window size, fullscreen mode, VSync, and FPS based on config values
 function config_apply_display_settings() {
-    logger_write(LogLevel.INFO, "ConfigManager", "Applying display settings", 
-                string("Resolution: {0}x{1}, Fullscreen: {2}", 
-                       global.config.game_width, global.config.game_height, global.config.fullscreen));
-    
     // Set window size
     window_set_size(global.config.game_width, global.config.game_height);
     
@@ -157,22 +153,21 @@ function config_apply_display_settings() {
     surface_resize(application_surface, global.config.game_width, global.config.game_height);
 }
 
-/// @description Get a configuration value
-/// @param {string} section Configuration section
-/// @param {string} key Configuration key
-/// @param {any} default_value Default value if not found
-/// @return {any} Configuration value
+/// @description Get a configuration value from a specific section and key
+/// @param {string} section Configuration section name
+/// @param {string} key Configuration key name  
+/// @param {any} default_value Default value if key not found
+/// @return {any} Configuration value or default if not found
 function config_get(section, key, default_value = undefined) {
     var struct_key = string("{0}.{1}", section, key);
     return struct_exists(global.config, struct_key) ? global.config[$ struct_key] : default_value;
 }
 
-/// @description Set a configuration value
-/// @param {string} section Configuration section
-/// @param {string} key Configuration key
+/// @description Set a configuration value for a specific section and key
+/// @param {string} section Configuration section name
+/// @param {string} key Configuration key name
 /// @param {any} value Value to set
 function config_set(section, key, value) {
     var struct_key = string("{0}.{1}", section, key);
     global.config[$ struct_key] = value;
-    logger_write(LogLevel.DEBUG, "ConfigManager", string("Config updated: {0} = {1}", struct_key, value), "Runtime change");
 }

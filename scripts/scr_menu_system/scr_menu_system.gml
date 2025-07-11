@@ -1,50 +1,96 @@
-/// @description Create menu button data structure
-/// @param {ButtonType} type Type of button
-/// @param {string} text Display text
-/// @param {real} x X position
-/// @param {real} y Y position
-/// @param {function} callback Function to call when clicked
-/// @return {struct} Button data structure
+/// @description Create a menu button data structure with all necessary properties
+/// @param {real} type ButtonType enum value for the button type
+/// @param {string} text Display text for the button
+/// @param {real} x X position in GUI coordinates
+/// @param {real} y Y position in GUI coordinates
+/// @param {function} callback Function to call when button is clicked
+/// @return {struct} Button data structure with all properties set
 function menu_create_button_data(type, text, x, y, callback) {
+    var button_width = 300;
+    var button_height = 60;
+    
+    // Safe access to config for button dimensions
+    if (variable_global_exists("config") && !is_undefined(global.config)) {
+        button_width = global.config.menu_button_width;
+        button_height = global.config.menu_button_height;
+    }
+    
     return {
         type: type,
         text: text,
         x: x,
         y: y,
-        width: global.config.menu_button_width,
-        height: global.config.menu_button_height,
+        width: button_width,
+        height: button_height,
         callback: callback,
         enabled: true,
         visible: true
     };
 }
 
-/// @description Factory function to create menu buttons
+/// @description Factory function to create menu button instances from configuration array
 /// @param {array} button_configs Array of button configuration structs
 function menu_create_buttons(button_configs) {
-    logger_write(LogLevel.INFO, "MenuSystem", 
-                string("Creating {0} menu buttons", array_length(button_configs)), "Menu initialization");
+    if (is_undefined(button_configs) || !is_array(button_configs)) {
+        if (variable_global_exists("log_enabled") && global.log_enabled) {
+            logger_write(LogLevel.ERROR, "MenuSystem", "Invalid button configurations provided", "Not an array or undefined");
+        }
+        return;
+    }
+    
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", 
+                    string("Creating {0} menu buttons", array_length(button_configs)), "Menu initialization");
+    }
     
     for (var i = 0; i < array_length(button_configs); i++) {
         var config = button_configs[i];
-        var button_instance = instance_create_layer(config.x, config.y, "UI", obj_menu_button);
         
-        // Initialize button properties
-        button_instance.button_data = config;
+        // Validate config structure
+        if (is_undefined(config) || !is_struct(config)) {
+            if (variable_global_exists("log_enabled") && global.log_enabled) {
+                logger_write(LogLevel.WARNING, "MenuSystem", 
+                            string("Skipping invalid button config at index {0}", i), "Invalid config structure");
+            }
+            continue;
+        }
         
-        logger_write(LogLevel.DEBUG, "MenuSystem", 
-                    string("Created button: {0} at ({1}, {2})", config.text, config.x, config.y), 
-                    "Button factory");
+        try {
+            var button_instance = instance_create_layer(config.x, config.y, "UI", obj_menu_button);
+            
+            // Initialize button properties
+            button_instance.button_data = config;
+            
+            if (variable_global_exists("log_enabled") && global.log_enabled) {
+                logger_write(LogLevel.DEBUG, "MenuSystem", 
+                            string("Created button: {0} at ({1}, {2})", config.text, config.x, config.y), 
+                            "Button factory");
+            }
+        } catch (error) {
+            if (variable_global_exists("log_enabled") && global.log_enabled) {
+                logger_write(LogLevel.ERROR, "MenuSystem", 
+                            string("Failed to create button: {0}", error), 
+                            string("Button index: {0}", i));
+            }
+        }
     }
 }
 
-/// @description Get main menu button configurations
-/// @return {array} Array of button configurations
+/// @description Get configuration array for main menu buttons with proper positioning
+/// @return {array} Array of button configuration structs for main menu
 function menu_get_main_menu_buttons() {
-    var center_x = global.config.game_width / 2 + global.config.menu_center_x_offset;
-    var center_y = global.config.game_height / 2 + global.config.menu_center_y_offset;
-    var start_y = center_y + global.config.menu_start_y_offset;
-    var spacing = global.config.menu_button_spacing;
+    var center_x = GAME_WIDTH / 2;
+    var center_y = GAME_HEIGHT / 2;
+    var start_y = center_y - 240;
+    var spacing = 80;
+    
+    // Use config values if available
+    if (variable_global_exists("config") && !is_undefined(global.config)) {
+        center_x += global.config.menu_center_x_offset;
+        center_y += global.config.menu_center_y_offset;
+        start_y = center_y + global.config.menu_start_y_offset;
+        spacing = global.config.menu_button_spacing;
+    }
     
     var buttons = [
         menu_create_button_data(ButtonType.CONTINUE, "Continue", center_x, start_y, menu_callback_continue),
@@ -58,35 +104,68 @@ function menu_get_main_menu_buttons() {
     return buttons;
 }
 
-// Menu button callbacks (same as before)
+// Menu button callback functions
+
+/// @description Handle Continue button press - load saved game
 function menu_callback_continue() {
-    logger_write(LogLevel.INFO, "MenuSystem", "Continue button pressed", "Not implemented yet");
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "Continue button pressed", "Not implemented yet");
+    }
     // TODO: Implement continue functionality
 }
 
+/// @description Handle New Game button press - start fresh game
 function menu_callback_new_game() {
-    logger_write(LogLevel.INFO, "MenuSystem", "New Game button pressed", "Not implemented yet");
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "New Game button pressed", "Not implemented yet");
+    }
     // TODO: Implement new game functionality
 }
 
+/// @description Handle Options button press - open settings menu
 function menu_callback_options() {
-    logger_write(LogLevel.INFO, "MenuSystem", "Options button pressed", "Not implemented yet");
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "Options button pressed", "Not implemented yet");
+    }
     // TODO: Implement options functionality
 }
 
+/// @description Handle Map Editor button press - open level editor
 function menu_callback_map_editor() {
-    logger_write(LogLevel.INFO, "MenuSystem", "Map Editor button pressed", "Not implemented yet");
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "Map Editor button pressed", "Not implemented yet");
+    }
     // TODO: Implement map editor functionality
 }
 
+/// @description Handle Run Tests button press - start automated testing
 function menu_callback_run_tests() {
-    logger_write(LogLevel.INFO, "MenuSystem", "Run Tests button pressed", "Not implemented yet");
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "Run Tests button pressed", "Not implemented yet");
+    }
     // TODO: Implement test runner functionality
 }
 
+/// @description Handle Exit button press - save and quit game
 function menu_callback_exit() {
-    logger_write(LogLevel.INFO, "MenuSystem", "Exit button pressed", "Shutting down game");
-    config_save(); // Save any runtime config changes
-    assets_cleanup(); // Clean up dynamic assets
+    if (variable_global_exists("log_enabled") && global.log_enabled) {
+        logger_write(LogLevel.INFO, "MenuSystem", "Exit button pressed", "Shutting down game");
+    }
+    
+    // Save configuration if possible
+    if (variable_global_exists("config") && function_exists("config_save")) {
+        config_save();
+    }
+    
+    // Clean up assets if possible
+    if (function_exists("assets_cleanup")) {
+        assets_cleanup();
+    }
+    
+    // Clean up game state if possible
+    if (function_exists("gamestate_cleanup")) {
+        gamestate_cleanup();
+    }
+    
     game_end();
 }
