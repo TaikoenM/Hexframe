@@ -19,10 +19,10 @@ function config_init() {
         menu_button_spacing: 80,
         menu_font_size: 24,
         
-        // Asset paths
-        asset_path_images: "assets/images/",
-        asset_path_sounds: "assets/sounds/",
-        asset_path_data: "assets/data/",
+        // Asset paths - Updated to match your actual directory structure
+        asset_path_images: "datafiles/assets/images/",
+        asset_path_sounds: "datafiles/assets/sounds/",
+        asset_path_data: "datafiles/assets/data/",
         
         // Logging settings
         log_enabled: true,
@@ -45,14 +45,36 @@ function config_init() {
 
 /// @description Load configuration values from the INI file
 /// @description Reads settings from file and applies them to global.config
-/// @description Creates default config file if none exists
+/// @description Creates default config file if none exists or if file is empty
 function config_load() {
+    var needs_save = false;
+    
     if (!file_exists(global.config_file)) {
+        needs_save = true;
+    } else {
+        // Check if file is empty or corrupted
+        try {
+            ini_open(global.config_file);
+            var test_value = ini_read_string("Display", "width", "");
+            ini_close();
+            
+            // If no sections exist or key returns empty, file is empty/corrupted
+            if (test_value == "") {
+                needs_save = true;
+            }
+        } catch (error) {
+            needs_save = true;
+        }
+    }
+    
+    if (needs_save) {
         config_save(); // Create default config file
         return;
     }
     
     try {
+        ini_open(global.config_file);
+        
         // Display settings
         global.config.game_width = ini_read_real("Display", "width", global.config.game_width);
         global.config.game_height = ini_read_real("Display", "height", global.config.game_height);
@@ -84,10 +106,14 @@ function config_load() {
         global.config.target_fps = ini_read_real("Performance", "target_fps", global.config.target_fps);
         global.config.fixed_timestep = ini_read_real("Performance", "fixed_timestep", global.config.fixed_timestep);
         
+        ini_close();
         global.config_loaded = true;
         
     } catch (error) {
         global.config_loaded = false;
+        if (variable_global_exists("log_enabled") && global.log_enabled) {
+            logger_write(LogLevel.ERROR, "ConfigManager", "Error loading configuration", string(error));
+        }
     }
 }
 
@@ -95,6 +121,8 @@ function config_load() {
 /// @description Writes all current config settings to persistent storage
 function config_save() {
     try {
+        ini_open(global.config_file);
+        
         // Display settings
         ini_write_real("Display", "width", global.config.game_width);
         ini_write_real("Display", "height", global.config.game_height);
@@ -125,6 +153,8 @@ function config_save() {
         // Performance settings
         ini_write_real("Performance", "target_fps", global.config.target_fps);
         ini_write_real("Performance", "fixed_timestep", global.config.fixed_timestep);
+        
+        ini_close();
         
     } catch (error) {
         // Log error if logging system is available

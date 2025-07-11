@@ -22,7 +22,7 @@ function assets_load_manifest() {
     if (variable_global_exists("config") && !is_undefined(global.config)) {
         manifest_file = global.config.asset_path_data + "asset_manifest.ini";
     } else {
-        manifest_file = "assets/data/asset_manifest.ini";
+        manifest_file = "datafiles/assets/data/asset_manifest.ini";
     }
     
     if (!file_exists(manifest_file)) {
@@ -30,7 +30,7 @@ function assets_load_manifest() {
             logger_write(LogLevel.WARNING, "AssetManager", "Asset manifest not found, creating default", manifest_file);
         }
         assets_create_default_manifest();
-        return;
+        // After creating the file, we need to continue and load it
     }
     
     if (variable_global_exists("log_enabled") && global.log_enabled) {
@@ -38,6 +38,9 @@ function assets_load_manifest() {
     }
     
     try {
+        // Open the INI file for reading
+        ini_open(manifest_file);
+        
         // Load image assets
         var image_count = ini_read_real("Images", "count", 0);
         for (var i = 0; i < image_count; i++) {
@@ -49,11 +52,14 @@ function assets_load_manifest() {
                 if (variable_global_exists("config") && !is_undefined(global.config)) {
                     full_path = global.config.asset_path_images + asset_file;
                 } else {
-                    full_path = "assets/images/" + asset_file;
+                    full_path = "datafiles/assets/images/" + asset_file;
                 }
                 global.asset_manifest[? asset_key] = full_path;
             }
         }
+        
+        // Close the INI file
+        ini_close();
         
         if (variable_global_exists("log_enabled") && global.log_enabled) {
             logger_write(LogLevel.INFO, "AssetManager", 
@@ -74,14 +80,26 @@ function assets_create_default_manifest() {
     if (variable_global_exists("config") && !is_undefined(global.config)) {
         manifest_file = global.config.asset_path_data + "asset_manifest.ini";
     } else {
-        manifest_file = "assets/data/asset_manifest.ini";
+        manifest_file = "datafiles/assets/data/asset_manifest.ini";
+    }
+    
+    // Ensure the directory exists
+    var directory = filename_dir(manifest_file);
+    if (!directory_exists(directory)) {
+        directory_create(directory);
     }
     
     try {
+        // Open INI file for writing
+        ini_open(manifest_file);
+        
         // Create default manifest entries
         ini_write_real("Images", "count", 1);
         ini_write_string("Images", "asset_0_key", "mainmenu_background");
         ini_write_string("Images", "asset_0_file", "mainmenu_background.png");
+        
+        // Close INI file
+        ini_close();
         
         if (variable_global_exists("log_enabled") && global.log_enabled) {
             logger_write(LogLevel.INFO, "AssetManager", "Created default asset manifest", manifest_file);
