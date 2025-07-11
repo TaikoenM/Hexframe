@@ -95,7 +95,7 @@ function assets_create_default_manifest() {
 
 /// @description Load a sprite dynamically from disk and cache it
 /// @param {string} asset_key Key identifier for the asset in the manifest
-/// @return {real} Sprite resource ID or -1 if loading failed
+/// @return {Asset.GMSprite} Sprite resource ID or -1 if loading failed
 function assets_load_sprite(asset_key) {
     // Validate input
     if (is_undefined(asset_key) || asset_key == "") {
@@ -167,7 +167,7 @@ function assets_load_sprite(asset_key) {
 
 /// @description Get a sprite resource, loading it if not already cached
 /// @param {string} asset_key Key identifier for the asset
-/// @return {real} Sprite resource ID or -1 if failed
+/// @return {Asset.GMSprite} Sprite resource ID or -1 if failed
 function assets_get_sprite(asset_key) {
     var sprite_id = global.loaded_sprites[? asset_key];
     if (is_undefined(sprite_id) || !sprite_exists(sprite_id)) {
@@ -178,7 +178,7 @@ function assets_get_sprite(asset_key) {
 
 /// @description Get a sprite resource that's safe to use in drawing functions
 /// @param {string} asset_key Key identifier for the asset
-/// @return {real} Valid sprite resource ID or sprite_get("spr_missing") as fallback
+/// @return {Asset.GMSprite} Valid sprite resource ID or sprite_get("spr_missing") as fallback
 function assets_get_sprite_safe(asset_key) {
     var sprite_id = assets_get_sprite(asset_key);
     

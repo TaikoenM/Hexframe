@@ -13,7 +13,7 @@ function gamestate_init() {
 }
 
 /// @description Change the current game state with logging and callback execution
-/// @param {real} new_state The new GameState enum value to transition to
+/// @param {Constant.GameState} new_state The new GameState enum value to transition to
 /// @param {string} reason Optional reason for the state change for logging
 /// @return {bool} True if state change was successful, false if already in that state
 function gamestate_change(new_state, reason = "") {
@@ -39,19 +39,19 @@ function gamestate_change(new_state, reason = "") {
 }
 
 /// @description Get the current game state
-/// @return {real} Current GameState enum value
+/// @return {Constant.GameState} Current GameState enum value
 function gamestate_get() {
     return global.game_state;
 }
 
 /// @description Get the previous game state
-/// @return {real} Previous GameState enum value  
+/// @return {Constant.GameState} Previous GameState enum value  
 function gamestate_get_previous() {
     return global.previous_game_state;
 }
 
 /// @description Register a callback function to be called when entering a specific state
-/// @param {real} state GameState enum value to watch for
+/// @param {Constant.GameState} state GameState enum value to watch for
 /// @param {function} callback Function to call when the state is entered
 function gamestate_register_callback(state, callback) {
     var callback_list = global.state_change_callbacks[? state];
@@ -63,7 +63,7 @@ function gamestate_register_callback(state, callback) {
 }
 
 /// @description Execute all registered callbacks for a given state
-/// @param {real} state GameState enum value that was entered
+/// @param {Constant.GameState} state GameState enum value that was entered
 function gamestate_execute_callbacks(state) {
     var callback_list = global.state_change_callbacks[? state];
     if (!is_undefined(callback_list)) {

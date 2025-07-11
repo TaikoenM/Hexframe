@@ -1,5 +1,5 @@
 /// @description Create a menu button data structure with all necessary properties
-/// @param {real} type ButtonType enum value for the button type
+/// @param {Constant.ButtonType} type ButtonType enum value for the button type
 /// @param {string} text Display text for the button
 /// @param {real} x X position in GUI coordinates
 /// @param {real} y Y position in GUI coordinates
@@ -29,7 +29,7 @@ function menu_create_button_data(type, text, x, y, callback) {
 }
 
 /// @description Factory function to create menu button instances from configuration array
-/// @param {array} button_configs Array of button configuration structs
+/// @param {Array<Struct>} button_configs Array of button configuration structs
 function menu_create_buttons(button_configs) {
     if (is_undefined(button_configs) || !is_array(button_configs)) {
         if (variable_global_exists("log_enabled") && global.log_enabled) {
@@ -77,7 +77,7 @@ function menu_create_buttons(button_configs) {
 }
 
 /// @description Get configuration array for main menu buttons with proper positioning
-/// @return {array} Array of button configuration structs for main menu
+/// @return {Array<Struct>} Array of button configuration structs for main menu
 function menu_get_main_menu_buttons() {
     var center_x = GAME_WIDTH / 2;
     var center_y = GAME_HEIGHT / 2;

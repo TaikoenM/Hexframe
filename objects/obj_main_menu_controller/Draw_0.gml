@@ -10,7 +10,7 @@ if (bg_sprite != -1 && sprite_exists(bg_sprite)) {
     draw_sprite_stretched(bg_sprite, 0, 0, 0, GAME_WIDTH, GAME_HEIGHT);
 } else {
     // Fallback: draw a solid color background if no sprite available
-    draw_set_color(c_dkblue);
+    draw_set_color(c_navy);
     draw_rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, false);
     draw_set_color(c_white);
 }
